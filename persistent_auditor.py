@@ -70,29 +70,35 @@ def generate_report(total_units, failed_attempts): #only supposed to print
     print(f"Total Deliveries Processed: {total_units}\nThe Number of Failed/Rejected Entries: {failed_attempts}")
 
 
-# def load_inventory():
-#     file = open(inventory_file,"r")
-#     if file.read().strip() == 0:
-#         file.write("")
-#         file.close()
-#     else:
-#         previous = file.read()
-#         return inventory,transactory_history
+def load_inventory():
+    with open(inventory_file, "r") as transactory_history:
         
-
+        content = transactory_history.read().strip().strip("[]")                #[100,50] becomes 100, 50
+        
+        if content == "":                                       #if file is empty
+            transactory_history = []
+            
+        else:
+            transactory_history = [int(inventory1) for inventory1 in content.split(",")]
+            inventory = sum(transactory_history)               # sums all previous inventory count
+            return inventory,transactory_history
+        
         
 def save_inventory(inventory, transactory_history):
-    inventory_level = 1000
+    # inventory_level = 1000
     while True:
-        inventory_level += 1
-        print(inventory, transactory_history)
+        # inventory_level += 1
         # print(f"{inventory_level}, {transactory_history}, {inventory}")    
+        with open(inventory_file, "w") as file:
+            file.writelines(str(transactory_history))
+            file.close
+            # break
             
-        file = open("inventory.txt", "w")
-        file.write(str(transactory_history))
-        file.close    
+        with open(inventory_file, "r") as file:         #FOR TESTING
+            print(file.read())
         break
-
+            
+        
         
 def main():
  
@@ -103,13 +109,14 @@ def main():
     transaction_history = []
  
     while not exit_program:   #while True
-        # inventory = sum(load_inventory())            #accounts for previous inventory count
+        
         quantity, rejected_entries = get_valid_input()
         failed_attempts += rejected_entries             #internal counter for failed attempts from get_valid_input
     
         if quantity == "quit":                            
             generate_report(inventory, failed_attempts)           
-            exit_program = True      
+            exit_program = True    
+            break  
         
         else:
             result = process_delivery(inventory, quantity)              #inventory = current total; quantity = new total; result = total inventory
@@ -121,12 +128,12 @@ def main():
                 transaction_history.append(quantity)
                 inventory = result      #reassigning, to increase the total inventory as inventory = 0 if not updated
                 tax_amount = calculate_tax(inventory)
-                print(f"Tax for this delivery amount: {tax_amount}")         
-                     
-    save_inventory(quantity, result)  
+                print(f"Tax for this delivery amount: {tax_amount}")      
+                                     
+        save_inventory(quantity, transaction_history)  
          
     
     
       
-if __name__=="__main__":
-    main()
+# if __name__=="__main__":
+#     main()
