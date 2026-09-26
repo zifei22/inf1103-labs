@@ -71,35 +71,25 @@ def generate_report(total_units, failed_attempts): #only supposed to print
 
 
 def load_inventory():
-    with open(inventory_file, "r") as transactory_history:
+    try:
+        with open(inventory_file, "r") as file:
+            inventory, *transactory_history = file
+            inventory = int(inventory.strip())          #deletes "\n" & convert to integer
+            transactory_history = [str(x.strip()) for x in transactory_history]     #spliting each value in transactory_history
+    
+    except FileNotFoundError:                           #if file doesn't exist
+        inventory = 0
+        transactory_history = []
+    return inventory, transactory_history         #inventory = previous total   
+
         
-        content = transactory_history.read().strip().strip("[]")                #[100,50] becomes 100, 50
-        
-        if content == "":                                       #if file is empty
-            transactory_history = []
-            
-        else:
-            transactory_history = [int(inventory1) for inventory1 in content.split(",")]
-            inventory = sum(transactory_history)               # sums all previous inventory count
-            return inventory,transactory_history
-        
-        
-def save_inventory(inventory, transactory_history):
-    # inventory_level = 1000
-    while True:
-        # inventory_level += 1
-        # print(f"{inventory_level}, {transactory_history}, {inventory}")    
-        with open(inventory_file, "w") as file:
-            file.writelines(str(transactory_history))
-            file.close
-            # break
-            
-        with open(inventory_file, "r") as file:         #FOR TESTING
-            print(file.read())
-        break
-            
-        
-        
+def save_inventory(inventory, transactory_history):             #inventory = total inventory
+    with open(inventory_file, "w") as file:
+        transactory_history = [str(x) for x in transactory_history]     #spliting each value in transactory_history
+        file.writelines(str(inventory) + "\n")
+        file.write(str("\n".join(transactory_history)))                 #spliting each value in transactory_history
+
+
 def main():
  
     inventory = 0
@@ -107,12 +97,19 @@ def main():
     exit_program = False
     failed_attempts = 0
     transaction_history = []
+    
  
     while not exit_program:   #while True
         
         quantity, rejected_entries = get_valid_input()
         failed_attempts += rejected_entries             #internal counter for failed attempts from get_valid_input
-    
+        
+        if load_inventory() == None:            #if inventory.txt doesn't exist, pass
+            break
+        else:
+            inventory1, transaction_history = load_inventory()   #unpacking the tuple of load_inventory, inventory1 = previous history
+            
+
         if quantity == "quit":                            
             generate_report(inventory, failed_attempts)           
             exit_program = True    
@@ -126,14 +123,14 @@ def main():
 
             else:
                 transaction_history.append(quantity)
-                inventory = result      #reassigning, to increase the total inventory as inventory = 0 if not updated
-                tax_amount = calculate_tax(inventory)
+                inventory = inventory1 + quantity
+                tax_amount = calculate_tax(quantity)
                 print(f"Tax for this delivery amount: {tax_amount}")      
                                      
-        save_inventory(quantity, transaction_history)  
+        save_inventory(inventory, transaction_history)      #inventory = total
          
+
+if __name__=="__main__":
+    main()
     
-    
-      
-# if __name__=="__main__":
-#     main()
+
