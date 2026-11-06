@@ -1,0 +1,1 @@
+[{"id": "P001", "name": "Laptop", "price": "2000.00", "stock": "3", "types": "Physical", "weight": "4.5"}, {"id": "P002", "name": "Mouse", "price": 50.0, "stock": 100.0, "types": "Digital", "download_size": 1.0}]
